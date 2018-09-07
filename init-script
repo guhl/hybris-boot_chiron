@@ -240,7 +240,8 @@ usb_setup_android_usb() {
 
 # This determines which USB setup method is going to be used
 usb_setup() {
-    if [ -d $ANDROID_USB ]; then
+    if [ ! "$(get_opt androidboot.configfs)" = "true" ]; then
+#    if [ -d $ANDROID_USB ]; then
         usb_setup_android_usb $1
     elif [ -d $GADGET_DIR ]; then
         usb_setup_configfs $1
@@ -323,7 +324,8 @@ check_kernel_config() {
 	echo "No /proc/config.gz. Enable CONFIG_IKCONFIG and CONFIG_IKCONFIG_PROC" >> /diagnosis.log
     else
 	# Must be =y
-	for x in CONFIG_CGROUPS CONFIG_AUTOFS4_FS CONFIG_DEVTMPFS_MOUNT CONFIG_DEVTMPFS CONFIG_UNIX CONFIG_INOTIFY_USER CONFIG_SYSVIPC CONFIG_NET CONFIG_PROC_FS CONFIG_SIGNALFD CONFIG_SYSFS CONFIG_TMPFS_POSIX_ACL CONFIG_VT; do
+#	for x in CONFIG_CGROUPS CONFIG_AUTOFS4_FS CONFIG_DEVTMPFS_MOUNT CONFIG_DEVTMPFS CONFIG_UNIX CONFIG_INOTIFY_USER CONFIG_SYSVIPC CONFIG_NET CONFIG_PROC_FS CONFIG_SIGNALFD CONFIG_SYSFS CONFIG_TMPFS_POSIX_ACL CONFIG_VT; do
+	for x in CONFIG_CGROUPS CONFIG_AUTOFS4_FS CONFIG_DEVTMPFS_MOUNT CONFIG_DEVTMPFS CONFIG_UNIX CONFIG_INOTIFY_USER CONFIG_SYSVIPC CONFIG_NET CONFIG_PROC_FS CONFIG_SIGNALFD CONFIG_SYSFS CONFIG_TMPFS_POSIX_ACL; do
 		zcat /proc/config.gz | grep -E "^$x=y\$" || echo "$x=y not found in /proc/config.gz" >> /diagnosis.log
  	done
 	# Must not be =y
@@ -345,9 +347,9 @@ if [ "$DONE_SWITCH" = "no" ]; then
 
     do_hotplug_scan
 
-    # first test of pstore / panic
-    cat /init.log > /dev/pmsg0
-    /bin/busybox insmod /bin/panic.ko
+    # pstore / panic
+#    cat /init.log > /dev/pmsg0
+#    /bin/busybox insmod /bin/panic.ko
 
     # Support /dev/block/mmcXXX only in initrd phase
     ln -s . /dev/block
