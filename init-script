@@ -345,6 +345,10 @@ if [ "$DONE_SWITCH" = "no" ]; then
 
     do_hotplug_scan
 
+    # first test of pstore / panic
+    cat /init.log > /dev/pmsg0
+    /bin/busybox insmod /bin/panic.ko
+
     # Support /dev/block/mmcXXX only in initrd phase
     ln -s . /dev/block
     ln -s /proc/mounts /etc/mtab

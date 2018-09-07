@@ -74,6 +74,7 @@ endif
 # Command used to make the image
 MKBOOTIMG := mkbootimg
 BB_STATIC := $(PRODUCT_OUT)/utilities/busybox
+PM_STATIC := $(PRODUCT_OUT)/vendor/lib/modules/panic.ko
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
   INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel
@@ -139,7 +140,7 @@ $(LOCAL_BUILT_MODULE): $(INSTALLED_KERNEL_TARGET) $(BOOT_RAMDISK) $(MKBOOTIMG) $
 	@rm -rf $@
 	$(hide)$(MKBOOTIMG) --ramdisk $(BOOT_RAMDISK) $(HYBRIS_BOOTIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@
 
-$(BOOT_RAMDISK): $(BOOT_RAMDISK_FILES) $(BB_STATIC)
+$(BOOT_RAMDISK): $(BOOT_RAMDISK_FILES) $(BB_STATIC) $(PM_STATIC)
 	@echo "Making initramfs : $@"
 	@rm -rf $(BOOT_INTERMEDIATE)/initramfs
 	@mkdir -p $(BOOT_INTERMEDIATE)/initramfs
@@ -148,6 +149,7 @@ $(BOOT_RAMDISK): $(BOOT_RAMDISK_FILES) $(BB_STATIC)
 # really hard to depend on things which may affect init.
 	@mv $(BOOT_RAMDISK_INIT) $(BOOT_INTERMEDIATE)/initramfs/init
 	@cp $(BB_STATIC) $(BOOT_INTERMEDIATE)/initramfs/bin/
+	@cp $(PM_STATIC) $(BOOT_INTERMEDIATE)/initramfs/bin/
 	@(cd $(BOOT_INTERMEDIATE)/initramfs && find . | cpio -H newc -o ) | gzip -9 > $@
 
 $(BOOT_RAMDISK_INIT): $(BOOT_RAMDISK_INIT_SRC) $(ALL_PREBUILT)
@@ -182,13 +184,14 @@ $(LOCAL_BUILT_MODULE): $(INSTALLED_KERNEL_TARGET) $(RECOVERY_RAMDISK) $(MKBOOTIM
 	@rm -rf $@
 	$(hide)$(MKBOOTIMG) --ramdisk $(RECOVERY_RAMDISK) $(HYBRIS_RECOVERYIMAGE_ARGS) $(BOARD_MKRECOVERYIMG_ARGS) --output $@
 
-$(RECOVERY_RAMDISK): $(RECOVERY_RAMDISK_FILES) $(BB_STATIC)
+$(RECOVERY_RAMDISK): $(RECOVERY_RAMDISK_FILES) $(BB_STATIC) $(PM_STATIC)
 	@echo "Making initramfs : $@"
 	@rm -rf $(RECOVERY_INTERMEDIATE)/initramfs
 	@mkdir -p $(RECOVERY_INTERMEDIATE)/initramfs
 	@cp -a $(RECOVERY_RAMDISK_SRC)/*  $(RECOVERY_INTERMEDIATE)/initramfs
 	@mv $(RECOVERY_RAMDISK_INIT) $(RECOVERY_INTERMEDIATE)/initramfs/init
 	@cp $(BB_STATIC) $(RECOVERY_INTERMEDIATE)/initramfs/bin/
+	@cp $(PM_STATIC) $(RECOVERY_INTERMEDIATE)/initramfs/bin/
 	@(cd $(RECOVERY_INTERMEDIATE)/initramfs && find . | cpio -H newc -o ) | gzip -9 > $@
 
 $(RECOVERY_RAMDISK_INIT): $(RECOVERY_RAMDISK_INIT_SRC) $(ALL_PREBUILT)
